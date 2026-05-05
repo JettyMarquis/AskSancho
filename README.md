@@ -4,6 +4,10 @@
   <img src="docs/asksancho.jpeg" alt="AskSancho" width="600">
 </p>
 
+<p align="center">
+  <a href="README.md"><b>English</b></a> · <a href="README.zh.md">中文</a>
+</p>
+
 > *"Before you charge at windmills, make sure you know what you're charging at."*
 
 Clarify your development requirement **before** it reaches Claude Code.

@@ -6,7 +6,10 @@ version: "1.0.0"
 
 # AskSancho — Claude Code Skill
 
+> **Language / 语言**: English · [中文说明见 README.zh.md](../README.zh.md)
+
 > **Trigger**: `/asksancho [your requirement in natural language]`
+> **触发方式**: `/asksancho [用自然语言描述你的需求]`
 > **Output**: structured spec ready for plan mode or copy-paste
 
 ---
