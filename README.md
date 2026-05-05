@@ -1,5 +1,9 @@
 # AskSancho
 
+<p align="center">
+  <img src="docs/asksancho.jpeg" alt="AskSancho" width="600">
+</p>
+
 > *"Before you charge at windmills, make sure you know what you're charging at."*
 
 Clarify your development requirement **before** it reaches Claude Code.
