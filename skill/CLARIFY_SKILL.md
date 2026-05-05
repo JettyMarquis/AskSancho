@@ -29,13 +29,24 @@ Extract from the file:
 ## Phase 2 — Verify working directory
 
 ```bash
-pwd
+pwd -P
 ```
 
-If the current directory does not match `working_directory`, tell the user:
-> "Note: task was created in `[working_directory]` but you are currently in `[pwd]`. Project context is embedded in the task file so the dialog will still work, but file paths in the spec may need adjustment."
+Compare the output to `working_directory` **case-insensitively** — on macOS, `/Users/vox/aigp` and `/Users/vox/AIGP` are the same directory and should not trigger a warning.
 
-Continue regardless.
+If the paths differ beyond case (genuinely different directories):
+
+```bash
+cd [working_directory]
+```
+
+Tell the user:
+> "Switched to `[working_directory]` to match the task context."
+
+If the `cd` fails, warn the user:
+> "Note: could not switch to `[working_directory]`. File paths in the spec may need manual adjustment."
+
+Continue regardless — the project context is embedded in the task file.
 
 ---
 
@@ -92,11 +103,11 @@ Pick the 1–2 most relevant from this list and ask via AskUserQuestion:
 Present a full summary via AskUserQuestion before generating the spec:
 
 ```
-目标：[one sentence]
-验收标准：[list]
-绝对不改：[list]
-约束：[list]
-范围之外：[list]
+目标：[一句话描述]
+验收标准：[可验证条件列表]
+绝对不改：[列出]
+约束：[列出]
+范围之外：[列出]
 
 以上内容是否准确？确认后我生成 spec。
 ```

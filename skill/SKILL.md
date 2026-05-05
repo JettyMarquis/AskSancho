@@ -39,7 +39,7 @@ Phase 4: tell user → run /asksancho-clarify in new window
 Run these commands. If a file or command is missing, skip silently — do not error.
 
 ```bash
-cat CLAUDE.md 2>/dev/null | head -80
+cat CLAUDE.md 2>/dev/null | head -40
 git log --oneline -8 2>/dev/null
 grep -A 40 "待办\|TODO\|Next\|下一步\|Priority" HANDOFF.md 2>/dev/null | head -40
 ```
@@ -74,7 +74,7 @@ Capture the working directory, then write the task file.
 
 ```bash
 mkdir -p ~/.claude/scratch
-pwd
+pwd -P
 ```
 
 Write to `~/.claude/scratch/asksancho-task.md` with this exact structure — substitute `{{REQUIREMENT}}` with the user's verbatim input, `{{CWD}}` with the captured working directory, and `{{PROJECT_CONTEXT}}` with the block from Phase 1:
@@ -105,8 +105,19 @@ CWD=$(pwd) && osascript -e "tell application \"Terminal\" to do script \"cd '$CW
 
 ## Phase 4 — Hand off to user
 
-Print this message verbatim:
+If the user wrote in Chinese, print the Chinese version; otherwise print the English version.
 
+Chinese:
+```
+任务文件已写入：~/.claude/scratch/asksancho-task.md
+
+在新打开的 Terminal 窗口中（或手动打开一个，cd 到当前目录）：
+  1. 运行：/asksancho-clarify
+  2. 回答澄清问题（4–5 轮）
+  3. 完成后返回这里，输入：@~/.claude/scratch/last-requirement-spec.md
+```
+
+English:
 ```
 Task file written: ~/.claude/scratch/asksancho-task.md
 
