@@ -31,17 +31,30 @@ Copy [`prompts/asksancho-basic.md`](prompts/asksancho-basic.md) in full, paste i
 ## Claude Code skill (project-aware)
 
 ```bash
-mkdir -p ~/.claude/skills/asksancho
+mkdir -p ~/.claude/skills/asksancho ~/.claude/skills/asksancho-clarify
 cp skill/SKILL.md ~/.claude/skills/asksancho/SKILL.md
+cp skill/CLARIFY_SKILL.md ~/.claude/skills/asksancho-clarify/SKILL.md
 ```
 
-Then in any Claude Code session:
+Two skills, two sessions — main context stays clean:
 
+**Session A** (your current session):
 ```
 /asksancho I want to [your requirement]
 ```
+Reads `CLAUDE.md`, `HANDOFF.md`, and recent git log → writes a task file → opens a new Terminal window automatically (macOS).
 
-The skill pre-reads your `CLAUDE.md`, `HANDOFF.md`, and recent git log, compresses them into a context block, then hands everything to a **Sonnet 4.6 subagent**. The subagent runs the full clarification dialog — your main conversation context only receives the finished spec.
+**Session B** (the new window):
+```
+/asksancho-clarify
+```
+Reads the task file → runs the full 5-step clarification dialog → writes the finished spec to `~/.claude/scratch/last-requirement-spec.md`.
+
+**Back in Session A**:
+```
+@~/.claude/scratch/last-requirement-spec.md
+```
+Reference the spec and proceed. The clarification dialog never touched your main context.
 
 ---
 
@@ -50,7 +63,7 @@ The skill pre-reads your `CLAUDE.md`, `HANDOFF.md`, and recent git log, compress
 | | Tier 1 | Tier 2 | Tier 3 |
 |---|---|---|---|
 | **What** | Standalone prompt | Claude Code skill | Local LLM app |
-| **Install** | None | Copy one file | Ollama + ChromaDB |
+| **Install** | None | Copy two files | Ollama + ChromaDB |
 | **Context** | None | CLAUDE.md / git log | Full vector memory |
 | **Input** | Text | Text | Text / voice / image |
 | **Status** | Ready | Ready | In development |
