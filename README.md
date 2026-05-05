@@ -41,7 +41,7 @@ Then in any Claude Code session:
 /asksancho I want to [your requirement]
 ```
 
-The skill reads your `CLAUDE.md`, `HANDOFF.md`, and recent git log before asking questions, so clarifications are grounded in your actual project context.
+The skill pre-reads your `CLAUDE.md`, `HANDOFF.md`, and recent git log, compresses them into a context block, then hands everything to a **Sonnet 4.6 subagent**. The subagent runs the full clarification dialog — your main conversation context only receives the finished spec.
 
 ---
 

@@ -46,7 +46,7 @@ cp skill/SKILL.md ~/.claude/skills/asksancho/SKILL.md
 /asksancho 我想要 [你的需求]
 ```
 
-Skill 会先读取你的 `CLAUDE.md`、`HANDOFF.md` 和近期 git log，基于真实项目上下文来提问，避免泛泛而谈的澄清。
+Skill 会预读你的 `CLAUDE.md`、`HANDOFF.md` 和近期 git log，压缩成上下文块，然后交给一个独立的 **Sonnet 4.6 subagent**。整个澄清对话在 subagent 里完成——主进程上下文只收到最终的结构化 spec，不被中间问答污染。
 
 ---
 
