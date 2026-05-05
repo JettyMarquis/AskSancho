@@ -1,124 +1,126 @@
 ---
-name: req-refine
-description: Requirement clarification skill for Claude Code. Reads lightweight project context (CLAUDE.md, git log, HANDOFF.md), runs an interactive clarification dialog, then produces a structured plan file with dual-model prompts (Opus 4.7 + Sonnet 4.6).
+name: asksancho
+description: Clarifies natural-language development requirements through structured dialogue. Reads lightweight project context (CLAUDE.md, git log, HANDOFF.md), runs an interactive clarification dialog, then produces a structured spec with dual-model prompts (Opus 4.7 + Sonnet 4.6).
 version: "1.0.0"
 ---
 
-# Requirement Refiner — Claude Code Skill
+# AskSancho — Claude Code Skill
 
-> **触发**: `/req-refine [自然语言需求]`
-> **产出**: 结构化需求 plan 文件，直接可作为下一个任务执行
+> **Trigger**: `/asksancho [your requirement in natural language]`
+> **Output**: structured spec ready for plan mode or copy-paste
 
 ---
 
-## Step 1: 读取轻量上下文
+## Step 1: Read lightweight context
 
-按顺序读取以下内容（任一不存在则跳过，不报错）：
+Read the following in order (skip silently if missing):
 
 ```bash
-# 1. 项目规则
+# 1. Project rules
 cat CLAUDE.md 2>/dev/null | head -80
 
-# 2. 最近工作方向
+# 2. Recent work direction
 git log --oneline -10 2>/dev/null
 
-# 3. 当前待办
+# 3. Current todos
 grep -A 20 "待办\|TODO\|Next\|下一步" HANDOFF.md 2>/dev/null | head -30
 ```
 
-**约束**：不 glob 代码文件，不读取源码，只读这三个来源。
+**Constraint**: no glob, no source file reads — only these three sources.
 
 ---
 
-## Step 2: 上下文感知的澄清环
+## Step 2: Context-aware clarification
 
-基于读取的上下文，用 `AskUserQuestion` 进行最多 **2 轮**澄清（每轮最多 4 个问题）。
+Use `AskUserQuestion` for up to **2 rounds** of clarification (max 4 questions per round).
 
-**问题生成原则**：
-- 如果需求涉及 CLAUDE.md 中的 Mandatory 规则，主动点出（例："这个改动会触及 tier/lock 系统，确认 L-14–L-18 的约束都满足吗？"）
-- 如果需求与最近 git commit 相关，指出关联（例："上一个 commit 刚修改了 inject_html.py，这次需求是否与其相关？"）
-- 始终问：**成功标准** 和 **绝对不改的东西**（这两项最常被遗漏）
+**Question principles**:
+- If the requirement touches a Mandatory rule in CLAUDE.md, flag it explicitly
+- If it overlaps with a recent git commit, note the connection
+- Always ask: **acceptance criteria** and **what must not change** (most commonly omitted)
 
-**标准澄清问题套组**（在无明显上下文关联时使用）：
-1. 完成后会看到什么具体变化？如何验证？
-2. 有哪些文件或行为绝对不能改动？
-3. 有已知的技术约束吗？（依赖、兼容性、性能）
-4. 这是一次性改动还是需要可重复运行的机制？
+**Standard question set** (when no strong context signal):
+1. What specific change will you or the system observe when this is done? How do you verify?
+2. What files or behaviors are absolutely off-limits?
+3. Any known technical constraints? (dependencies, compatibility, performance)
+4. One-shot change or a repeatable mechanism?
 
 ---
 
-## Step 3: 边界确认
+## Step 3: Boundary confirmation
 
-在进入 plan mode 前，输出需求摘要并确认：
+Before entering plan mode, output a requirement summary and ask for confirmation:
 
 ```
-【需求摘要】
-目标：[一句话]
-成功标准：[1–3条可验证的条件]
-绝对不改：[列出]
-约束：[列出]
-OUT OF SCOPE：[明确排除项]
+[Summary]
+Goal: [one sentence]
+Acceptance criteria: [1-3 verifiable conditions]
+Must not touch: [list]
+Constraints: [list]
+Out of scope: [explicit exclusions]
 ```
 
-问用户："**以上准确吗？确认后我将生成执行计划。**"
+Ask: **"Does this look right? I'll generate the execution plan once confirmed."**
 
 ---
 
-## Step 4: 进入 Plan Mode，生成结构化需求文件
+## Step 4: Enter plan mode, generate structured spec
 
-调用 `EnterPlanMode`，在 plan 文件中写入以下内容：
+Call `EnterPlanMode` and write:
 
 ```markdown
 # Context
 
-[为什么做这个需求 — 1–2 句话，说明问题或动机]
+[Why this requirement — 1-2 sentences on problem or motivation]
 
 ---
 
-## 需求边界
+## Requirement boundaries
 
-| | 内容 |
+| | Content |
 |---|---|
-| 目标 | [一句话] |
-| 成功标准 | [列出，可验证] |
-| 绝对不改 | [列出] |
-| 约束 | [列出] |
-| OUT OF SCOPE | [列出排除项] |
+| Goal | [one sentence] |
+| Acceptance criteria | [list, verifiable] |
+| Must not touch | [list] |
+| Constraints | [list] |
+| Out of scope | [list] |
+
+## Code references
+
+[Files / functions from Step 1 context — only list confirmed relevant ones]
 
 ---
 
 ## FOR OPUS 4.7
 
-[较长提示词：含"为什么"背景、已知约束、质量门控、允许推理替代方案]
+[Longer prompt: includes "why" background, known constraints, quality gate, open to alternative approaches]
 
 ---
 
 ## FOR SONNET 4.6
 
-[精简提示词：消除歧义、有序任务列表、明确验证命令、不让模型自行决策]
+[Concise prompt: no ambiguity, ordered task list, explicit verification command, no discretionary decisions]
 
 ---
 
-## 验证
+## Verification
 
-[端到端验证步骤：运行什么命令 / 看到什么输出 = 成功]
+[End-to-end verification: what command to run / what output = success]
 ```
 
 ---
 
 ## Step 5: ExitPlanMode
 
-用户批准后，计划文件即为下一个任务的完整上下文。可直接粘贴 `FOR OPUS 4.7` 或 `FOR SONNET 4.6` 部分到新会话使用。
+Once approved, the plan file is the complete context for the next task. Paste the `FOR OPUS 4.7` or `FOR SONNET 4.6` section directly into a new session.
 
 ---
 
-## 部署方式
-
-将本文件复制到全局 skill 目录：
+## Deploy
 
 ```bash
-mkdir -p ~/.claude/skills/req-refine
-cp skill/SKILL.md ~/.claude/skills/req-refine/SKILL.md
+mkdir -p ~/.claude/skills/asksancho
+cp skill/SKILL.md ~/.claude/skills/asksancho/SKILL.md
 ```
 
-之后在任何项目的 Claude Code 会话中，输入 `/req-refine` 即可触发。
+Then `/asksancho` is available in any Claude Code session.

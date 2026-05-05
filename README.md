@@ -1,79 +1,113 @@
-# req-refiner
+# AskSancho
 
-将自然语言开发需求整理为 Claude Code 高质量输入的三层工作流。
+> *"Before you charge at windmills, make sure you know what you're charging at."*
 
-## 为什么需要这个
-
-Claude Code 的质量上限取决于需求描述的清晰度。用户用自然语言表达的需求通常：
-- 缺少成功标准（如何验证完成）
-- 遗漏约束（不能动什么）
-- 边界模糊（哪些不做）
-
-`req-refiner` 通过一套五步对话协议，在需求进入 Claude Code 前完成澄清，并为 Opus 4.7 和 Sonnet 4.6 分别生产优化的提示词。
+**AskSancho** is a three-tier workflow that clarifies natural-language development requirements before they reach Claude Code — so the AI builds the right thing the first time.
 
 ---
 
-## 三层架构
+## Why
 
-### 基础版 — 零依赖，任意 LLM 可用
+The quality ceiling of Claude Code is the clarity of your requirement. Natural-language requests typically suffer from:
 
-1. 打开任意 LLM 对话窗口（claude.ai、ChatGPT、本地 Gemma 等）
-2. 复制 `prompts/req-refiner-basic.md` 全文，粘贴到对话框
-3. 在末尾粘贴你的需求
-4. 完成五步对话后，获得 Opus 4.7 版和 Sonnet 4.6 版提示词
+- **No acceptance criteria** — neither you nor the model knows when "done" is done
+- **Fuzzy scope** — Claude silently expands into adjacent territory
+- **Missing constraints** — CLAUDE.md rules, timing, compatibility requirements go unmentioned
+- **Wrong model framing** — Opus 4.7 and Sonnet 4.6 need fundamentally different prompt styles
 
-示例对话见 `examples/example-session.md`。
+AskSancho uses a five-step clarification protocol to fix all of this *before* the spec hits Claude Code, and produces separate optimized prompts for Opus 4.7 and Sonnet 4.6.
 
 ---
 
-### 进阶版 — Claude Code Skill，读取项目上下文
+## Three Tiers
 
-部署：
+### Tier 1 — Basic (zero install, any LLM)
+
+Copy `prompts/asksancho-basic.md` in full, paste into any LLM chat window (Claude.ai, ChatGPT, local Gemma, etc.), append your requirement at the bottom, and start the conversation.
+
+The five-step protocol runs:
+1. **Restate** — model echoes the requirement back for confirmation
+2. **Disambiguate** — one ambiguity at a time, most impactful first
+3. **Probe** — surfaces four commonly omitted categories (acceptance criteria, out-of-scope, edge cases, failure behavior)
+4. **Consolidate** — final check before output
+5. **Output** — structured spec with model-specific hints
+
+See `examples/example-session.md` for a worked example.
+
+---
+
+### Tier 2 — Claude Code Skill (project-aware)
+
+Deploy:
 ```bash
-mkdir -p ~/.claude/skills/req-refine
-cp skill/SKILL.md ~/.claude/skills/req-refine/SKILL.md
+mkdir -p ~/.claude/skills/asksancho
+cp skill/SKILL.md ~/.claude/skills/asksancho/SKILL.md
 ```
 
-使用：在任何项目的 Claude Code 会话中输入
+Trigger inside any Claude Code session:
 ```
-/req-refine [你的需求]
+/asksancho [your requirement in natural language]
 ```
 
-Skill 会自动读取 CLAUDE.md / git log / HANDOFF.md，基于项目上下文提问，然后在 plan mode 中生成结构化需求文件。
+The skill reads lightweight project context (CLAUDE.md, HANDOFF.md, git log) before asking clarifying questions, then produces a structured spec with a **Code references** section populated from actual project files. Three handoff options: plan mode, clipboard output, or file bridge (`~/.claude/scratch/last-requirement-spec.md`).
 
 ---
 
-### 高级版 — 本地 LLM 中间层（开发中）
+### Tier 3 — Local LLM middleware (in development)
 
-基于 Gemma 4（Ollama）+ ChromaDB 向量记忆的本地应用，支持文本/语音/图像输入，并可将精炼后的需求直接写入 Claude Code。
+A local FastAPI application backed by Gemma 4 (via Ollama) and ChromaDB vector memory. Accepts text, voice (whisper.cpp), and image input. Automatically injects the refined spec into Claude Code.
 
-开发状态：Phase A（记忆层）进行中。见 `core/` 目录。
+Development status: architecture document complete, implementation planned in five phases. See `core/` and `docs/advanced-tier-architecture.md`.
 
 ---
 
-## 文件结构
+## Spec Template (all tiers)
 
 ```
-req-refiner/
+## Goal
+## In scope
+## Out of scope
+## Inputs / Outputs
+## Constraints
+## Acceptance criteria
+## Open questions for Claude Code
+## Code references          <- Tier 2 / Tier 3 only
+```
+
+---
+
+## Repository Structure
+
+```
+AskSancho/
+├── LICENSE
 ├── README.md
 ├── prompts/
-│   └── req-refiner-basic.md    ← 基础版 meta-prompt（直接复制使用）
+│   └── asksancho-basic.md      <- Tier 1 meta-prompt (copy and use directly)
 ├── examples/
-│   └── example-session.md      ← 完整示例对话
+│   └── example-session.md      <- Full worked example session
 ├── skill/
-│   └── SKILL.md                ← 进阶版 Claude Code skill
-├── core/                       ← 高级版后端（开发中）
-│   ├── collector.py            ← Claude Code transcript 收集器
-│   ├── indexer.py              ← 项目文件向量化
-│   ├── refiner.py              ← Gemma 4 精炼器
-│   └── injector.py             ← 输出注入 Claude Code（TODO）
+│   └── SKILL.md                <- Tier 2 Claude Code skill
+├── core/                       <- Tier 3 backend (in development)
+│   ├── collector.py            <- Claude Code transcript collector (implemented)
+│   ├── indexer.py              <- Project file vectorizer (TODO Phase A)
+│   ├── refiner.py              <- Gemma 4 refiner (TODO Phase B)
+│   └── injector.py             <- Claude Code injection bridge (TODO Phase E)
 ├── ui/
-│   └── index.html              ← 高级版前端（开发中）
-└── app.py                      ← FastAPI 入口（开发中）
+│   └── index.html              <- Tier 3 frontend (TODO Phase C)
+├── app.py                      <- FastAPI entry point (TODO Phase C)
+└── dist/
+    └── req-refiner-spec-v1.0.0.docx   <- Design specification document
 ```
 
 ---
 
-## 快速开始（基础版）
+## Quick Start
 
-不需要安装任何东西。打开 `prompts/req-refiner-basic.md`，复制全文，粘贴到任意 LLM 对话窗口，在末尾加上你的需求。
+**No install needed.** Open `prompts/asksancho-basic.md`, copy everything, paste into any LLM chat window, add your requirement at the end.
+
+---
+
+## License
+
+MIT -- see [LICENSE](LICENSE).

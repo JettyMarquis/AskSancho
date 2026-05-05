@@ -10,7 +10,7 @@ Dependencies: ollama, chromadb
 """
 
 # TODO: implement Gemma 4 dialog loop with RAG
-# Five-step protocol mirrors prompts/req-refiner-basic.md
+# Five-step protocol mirrors prompts/asksancho-basic.md
 # but with project memory injected as context before S1
 
 raise NotImplementedError("refiner.py is not yet implemented — High Version Phase B")
