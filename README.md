@@ -16,9 +16,14 @@ Clarify your development requirement **before** it reaches Claude Code.
 
 ## The problem
 
-Claude Code's output quality is bounded by how well you describe what you want. Most natural-language requirements are missing acceptance criteria, have fuzzy scope, or don't account for existing project constraints. The result is rework.
+Claude Code's output quality is bounded by how well you describe what you want. Most natural-language requirements have one or more of these issues:
 
-AskSancho runs a five-step clarification dialog and produces a structured spec — with separate versions for Opus 4.7 and Sonnet 4.6.
+- **No acceptance criteria** — neither you nor the model knows what "done" means
+- **Fuzzy scope** — Claude quietly expands into adjacent features
+- **Missing constraints** — your CLAUDE.md rules, deadlines, and compatibility requirements go unmentioned
+- **Wrong model usage** — Opus 4.7 and Sonnet 4.6 need very different prompt styles
+
+AskSancho runs a five-step clarification protocol and produces a structured spec optimized separately for Opus 4.7 and Sonnet 4.6.
 
 ---
 
@@ -58,7 +63,7 @@ Reference the spec and proceed. The clarification dialog never touched your main
 
 ---
 
-## Tiers
+## Three tiers
 
 | | Tier 1 | Tier 2 | Tier 3 |
 |---|---|---|---|
