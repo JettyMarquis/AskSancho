@@ -27,6 +27,32 @@ AskSancho runs a five-step clarification protocol and produces a structured spec
 
 ---
 
+## When to use it
+
+**Use AskSancho** when your requirement has any of these signals:
+- Estimated execution time > 10 minutes
+- Words like "refactor", "redesign", "add feature", "integrate"
+- Multiple files or systems involved
+- You can't write the acceptance criteria in one sentence right now
+
+**Skip it** when the task is already fully specified:
+- Bug fix with a clear error message and obvious fix
+- Single-line or single-file change with exact instructions
+- Running a command or script
+
+**The rule**: if you can write the acceptance criteria in one sentence right now, just execute. If you can't, use AskSancho.
+
+| Requirement | Use? | Why |
+|---|---|---|
+| "Fix the typo on line 42 of README" | No | Fully specified, < 1 min |
+| "Change the button color to #3B82F6" | No | Exact value given |
+| "Add user authentication" | **Yes** | OAuth or password? Which pages? Existing JWT? |
+| "Improve performance" | **Yes** | No acceptance criteria at all |
+| "Refactor the data pipeline" | **Yes** | Scope, constraints, and must-not-touch unclear |
+| "Add a console.log for debugging" | No | One-line, throwaway |
+
+---
+
 ## Use it now (no install)
 
 Copy [`prompts/asksancho-basic.md`](prompts/asksancho-basic.md) in full, paste it into any LLM chat window, add your requirement at the end.
